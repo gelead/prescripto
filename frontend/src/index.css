@@ -6,3 +6,6 @@
 .active hr{
   display: block;
 }
+::-webkit-scrollbar{
+  @apply hidden
+}
