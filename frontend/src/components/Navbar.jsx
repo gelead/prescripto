@@ -40,8 +40,8 @@ const Navbar = () => {
             </div>
           </div>
         ) : (
-            <button onClick={() => navigate("/login")} className="bg-primary text-white px-8 py-3 rounded-lg hidden md:block cursor-pointer font-medium">
-              Login
+            <button onClick={() => navigate("/login")} className="bg-primary text-white px-8 py-3 rounded-full md:block cursor-pointer font-medium hover:scale-105 transition-all duration-100">
+              Sign Up
             </button>
         )}
       </div>
