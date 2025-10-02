@@ -34,7 +34,7 @@ const Navbar = () => {
       </ul>
       <div className="flex items-center gap-4">
         {token ? (
-          <div className="items-center gap-1 cursor-pointer group relative hidden md:flex">
+          <div className="flex items-center gap-1 cursor-pointer group relative">
             <img
               className="w-10 rounded-full"
               src={assets.profile_pic}
@@ -60,7 +60,7 @@ const Navbar = () => {
                   My Appointments
                 </p>
                 <p
-                  onClick={(token) => setToken(!token)}
+                  onClick={(token) => {setToken(!token), navigate('/')}}
                   className="hover:text-black cursor-pointer"
                 >
                   Logout

@@ -23,7 +23,7 @@ const Doctors = () => {
       <p className="text-gray-600">Browse through the doctors specialist.</p>
       <div className="flex flex-col sm:flex-row items-start gap-5 mt-5 ">
         <button
-          onClick={() => setShowFilter(!showFilter)}
+          onClick={() => {setShowFilter(!showFilter), navigate('/doctors')}}
           className={`${
             showFilter ? "bg-primary text-white" : "border border-gray-200"
           } border border-gray-200 px-3 py-1 text-sm rounded cursor-pointer sm:hidden transition-all gap-2 duration-100`}

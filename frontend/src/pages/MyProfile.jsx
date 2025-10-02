@@ -40,19 +40,21 @@ const MyProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-lg mx-auto">
+    <div className="py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto">
         {/* Profile Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+        <div className="rounded-xl shadow-xl border border-gray-200 overflow-hidden">
           {/* Header */}
-          <div className="bg-primary p-6 text-white text-center">
-            <h1 className="text-2xl font-bold">Profile Information</h1>
-            <p className="text-blue-100 mt-1">
-              {isEdit ? "Edit your personal details" : "View your personal details"}
+          <div className="bg-primary py-3 p-6 text-white text-center">
+            <h1 className="text-xl font-bold">Profile Information</h1>
+            <p className="text-blue-100 mt-1 text-sm">
+              {isEdit
+                ? "Edit your personal details"
+                : "View your personal details"}
             </p>
           </div>
 
-          <div className="p-6">
+          <div className="p-3">
             {/* Profile Picture Section */}
             <div className="flex flex-col items-center mb-8">
               <div className="relative group">
@@ -77,18 +79,29 @@ const MyProfile = () => {
                   </label>
                 )}
               </div>
-              <h2 className="text-xl font-semibold text-gray-800 mt-4">
-                {userData.name}
-              </h2>
+              <div className="mt-4 w-full text-center">
+                {isEdit ? (
+                  <input
+                    type="text"
+                    value={userData.name}
+                    onChange={(e) => handleChange(e, "name")}
+                    className="text-xl font-semibold text-gray-800 bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 text-center w-full"
+                  />
+                ) : (
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    {userData.name}
+                  </h2>
+                )}
+              </div>
             </div>
 
             {/* Contact Information */}
             <div className="space-y-4 mb-6">
-              <h3 className="font-semibold text-gray-700 text-lg border-b border-gray-200 pb-2 flex items-center gap-2">
+              <h3 className="font-semibold text-gray-700 text-base border-b border-gray-200 pb-2 flex items-center gap-2">
                 <User size={18} />
                 Contact Information
               </h3>
-              
+
               <div className="space-y-3">
                 {/* Email */}
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
@@ -103,7 +116,9 @@ const MyProfile = () => {
                         className="w-full border-b border-gray-300 bg-transparent py-1 focus:outline-none focus:border-blue-500 text-gray-800"
                       />
                     ) : (
-                      <span className="text-gray-800 block">{userData.email}</span>
+                      <span className="text-gray-800 block">
+                        {userData.email}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -121,14 +136,19 @@ const MyProfile = () => {
                         className="w-full border-b border-gray-300 bg-transparent py-1 focus:outline-none focus:border-blue-500 text-gray-800"
                       />
                     ) : (
-                      <span className="text-gray-800 block">{userData.phone}</span>
+                      <span className="text-gray-800 block">
+                        {userData.phone}
+                      </span>
                     )}
                   </div>
                 </div>
 
                 {/* Address */}
                 <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                  <MapPin size={18} className="text-gray-500 flex-shrink-0 mt-1" />
+                  <MapPin
+                    size={18}
+                    className="text-gray-500 flex-shrink-0 mt-1"
+                  />
                   <div className="flex-1">
                     <span className="text-gray-600 text-sm block">Address</span>
                     {isEdit ? (
@@ -161,11 +181,11 @@ const MyProfile = () => {
 
             {/* Basic Information */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-700 text-lg border-b border-gray-200 pb-2 flex items-center gap-2">
+              <h3 className="font-semibold text-gray-700 text-bold border-b border-gray-200 pb-2 flex items-center gap-2">
                 <Calendar size={18} />
                 Basic Information
               </h3>
-              
+
               <div className="space-y-3">
                 {/* Gender */}
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
@@ -181,10 +201,14 @@ const MyProfile = () => {
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
-                        <option value="Prefer not to say">Prefer not to say</option>
+                        <option value="Prefer not to say">
+                          Prefer not to say
+                        </option>
                       </select>
                     ) : (
-                      <span className="text-gray-800 block">{userData.gender}</span>
+                      <span className="text-gray-800 block">
+                        {userData.gender}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -193,7 +217,9 @@ const MyProfile = () => {
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Calendar size={18} className="text-gray-500 flex-shrink-0" />
                   <div className="flex-1">
-                    <span className="text-gray-600 text-sm block">Date of Birth</span>
+                    <span className="text-gray-600 text-sm block">
+                      Date of Birth
+                    </span>
                     {isEdit ? (
                       <input
                         type="date"
@@ -202,7 +228,9 @@ const MyProfile = () => {
                         className="w-full border-b border-gray-300 bg-transparent py-1 focus:outline-none focus:border-blue-500 text-gray-800"
                       />
                     ) : (
-                      <span className="text-gray-800 block">{userData.dateOfBirth}</span>
+                      <span className="text-gray-800 block">
+                        {userData.dateOfBirth}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -221,7 +249,7 @@ const MyProfile = () => {
               >
                 {isEdit ? "Save Changes" : "Edit Profile"}
               </button>
-              
+
               {isEdit && (
                 <button
                   onClick={() => setIsEdit(false)}
