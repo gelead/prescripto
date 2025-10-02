@@ -6,6 +6,7 @@ const Doctors = () => {
   const { speciality } = useParams();
   const { doctors } = useContext(AppContext);
   const [filterDoc, setFilterDoc] = useState([]);
+  const [showFilter, setShowFilter] = useState(false);
   const navigate = useNavigate();
   const applyFilter = () => {
     if (speciality) {
@@ -21,67 +22,78 @@ const Doctors = () => {
     <div>
       <p className="text-gray-600">Browse through the doctors specialist.</p>
       <div className="flex flex-col sm:flex-row items-start gap-5 mt-5 ">
-        <div className="flex flex-col gap-4 text-sm text-gray-600">
-          <NavLink
-            to="/doctors/General physician"
-            className={({ isActive }) =>
-              `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
+        <button
+          onClick={() => setShowFilter(!showFilter)}
+          className={`${
+            showFilter ? "bg-primary text-white" : "border border-gray-200"
+          } border border-gray-200 px-3 py-1 text-sm rounded cursor-pointer sm:hidden transition-all gap-2 duration-100`}
+        >
+          Filters
+        </button>
+        {showFilter && (
+          <div className="flex flex-col gap-4 text-sm text-gray-600">
+            <NavLink
+              to="/doctors/General physician"
+              className={({ isActive }) =>
+                `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
     ${isActive ? "bg-indigo-100 text-black" : "hover:bg-gray-100"}`
-            }
-          >
-            General physician
-          </NavLink>
+              }
+            >
+              General physician
+            </NavLink>
 
-          <NavLink
-            to="/doctors/Gynecologist"
-            className={({ isActive }) =>
-              `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
+            <NavLink
+              to="/doctors/Gynecologist"
+              className={({ isActive }) =>
+                `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
     ${isActive ? "bg-indigo-100 text-black" : "hover:bg-gray-100"}`
-            }
-          >
-            Gynecologist
-          </NavLink>
+              }
+            >
+              Gynecologist
+            </NavLink>
 
-          <NavLink
-            to="/doctors/Dermatologist"
-            className={({ isActive }) =>
-              `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
+            <NavLink
+              to="/doctors/Dermatologist"
+              className={({ isActive }) =>
+                `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
     ${isActive ? "bg-indigo-100 text-black" : "hover:bg-gray-100"}`
-            }
-          >
-            Dermatologist
-          </NavLink>
+              }
+            >
+              Dermatologist
+            </NavLink>
 
-          <NavLink
-            to="/doctors/Pediatricians"
-            className={({ isActive }) =>
-              `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
+            <NavLink
+              to="/doctors/Pediatricians"
+              className={({ isActive }) =>
+                `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
     ${isActive ? "bg-indigo-100 text-black" : "hover:bg-gray-100"}`
-            }
-          >
-            Pediatricians
-          </NavLink>
+              }
+            >
+              Pediatricians
+            </NavLink>
 
-          <NavLink
-            to="/doctors/Neurologist"
-            className={({ isActive }) =>
-              `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
+            <NavLink
+              to="/doctors/Neurologist"
+              className={({ isActive }) =>
+                `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
     ${isActive ? "bg-indigo-100 text-black" : "hover:bg-gray-100"}`
-            }
-          >
-            Neurologist
-          </NavLink>
+              }
+            >
+              Neurologist
+            </NavLink>
 
-          <NavLink
-            to="/doctors/Gastroenterologist"
-            className={({ isActive }) =>
-              `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
+            <NavLink
+              to="/doctors/Gastroenterologist"
+              className={({ isActive }) =>
+                `w-[94vh] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer 
     ${isActive ? "bg-indigo-100 text-black" : "hover:bg-gray-100"}`
-            }
-          >
-            Gastroenterologist
-          </NavLink>
-        </div>
+              }
+            >
+              Gastroenterologist
+            </NavLink>
+          </div>
+        )}
+
         <div className="w-full grid [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))] gap-4 gap-y-6">
           {filterDoc.map((item) => (
             <div
