@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+
+* {
+  font-family: Outfit;
+}
+@theme {
+  --color-primary: #5f6fff;
+}
+.active hr{
+  display: block;
+}
+::-webkit-scrollbar{
+  @apply hidden
+}
+@media (max-width: 768px) {
+  .active p{
+    @apply text-white bg-primary;
+  }
+}
