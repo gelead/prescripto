@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import doctorModel from "../models/doctorModel.js";
 import validator from "validator";
 import cloudinary from "../config/cloudinary.js";
-import jwt from 'jsonwebtoken'
+import jwt from "jsonwebtoken";
 
 const addDoctor = async (req, res) => {
   try {
@@ -40,9 +40,7 @@ const addDoctor = async (req, res) => {
       return res.status(400).json({ message: "Please enter a valid email" });
     }
 
-    if (
-      password.length < 8 
-    ) {
+    if (password.length < 8) {
       return res.status(400).json({
         message: "Password must be at least 8 characters",
       });
@@ -101,7 +99,6 @@ const addDoctor = async (req, res) => {
   }
 };
 
-
 // API For admin Login
 
 const loginAdmin = async (req, res) => {
@@ -109,7 +106,9 @@ const loginAdmin = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
     // Check credentials
@@ -117,21 +116,24 @@ const loginAdmin = async (req, res) => {
       email === process.env.ADMIN_EMAIL &&
       password === process.env.ADMIN_PASSWORD
     ) {
-      const token = jwt.sign(
-        { email, role: "admin" },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-      );
+      const token = jwt.sign({ email, role: "admin" }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      });
 
-      return res.status(200).json({ token, message: "Admin logged in successfully" });
+      return res.status(200).json({
+        success: true,
+        token,
+        message: "Admin logged in successfully",
+      });
     } else {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials" });
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 export { addDoctor, loginAdmin };

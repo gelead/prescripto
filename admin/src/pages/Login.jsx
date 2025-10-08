@@ -1,18 +1,43 @@
 import React, { useContext, useState } from "react";
 import { assets } from "../assets/assets";
 import { AdminContext } from "../context/AdminContext";
+import axios from "axios";
+import { toast } from "react-toastify";
+
 const Login = () => {
   const [state, setState] = useState("Admin");
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const {setToken, backendUrl} = useContext(AdminContext)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { setAToken, backendUrl } = useContext(AdminContext);
+  const [loading, setLoading] = useState(false);
 
-  onSubmitHandler = async (event) => {
+  const onSubmitHandler = async (event) => {
+    event.preventDefault();
+    setLoading(true);
 
-  }
-
-
-
+    try {
+      if (state === "Admin") {
+        const { data } = await axios.post(backendUrl + "/api/admin/login", {
+          email,
+          password,
+        });
+        if (data.success) {
+          toast.success(data.message);
+          localStorage.setItem("aToken", data.token);
+          setAToken(data.token);
+        } else {
+          toast.error(data.message);
+        }
+      } else {
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Login failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <form onSubmit={onSubmitHandler} className="min-h-[80vh] flex">
@@ -23,7 +48,8 @@ const Login = () => {
         <div className="w-full">
           <p>Email</p>
           <input
-            onChange={(e) => setEmail(e.target.value)} value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            value={email}
             className="border border-[#DADADA] rounded w-full p-2 mt-1"
             type="email"
             required
@@ -32,22 +58,41 @@ const Login = () => {
         <div className="w-full">
           <p>Password</p>
           <input
-          onChange={(e) => setPassword(e.target.value)} value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            value={password}
             className="border border-[#DADADA] rounded w-full p-2 mt-1"
             type="password"
             required
           />
         </div>
-        <button className="bg-primary text-white w-full py-2 rounded-md text-base cursor-pointer">
-          Login
+        <button
+          type="submit"
+          disabled={loading}
+          className={`bg-primary text-white w-full py-2 rounded-md text-base cursor-pointer ${
+            loading ? "opacity-50" : "hover:bg-primary-dark"
+          } transition-colors`}
+        >
+          {loading ? "Logging in..." : "Login"}
         </button>
         {state === "Admin" ? (
           <p>
-            Doctor Login? <span className="text-primary underline cursor-pointer" onClick={() => setState('Doctor')}>Click here</span>
+            Doctor Login?{" "}
+            <span
+              className="text-primary underline cursor-pointer"
+              onClick={() => setState("Doctor")}
+            >
+              Click here
+            </span>
           </p>
         ) : (
           <p>
-            Admin Login? <span className="text-primary underline cursor-pointer" onClick={() => setState('Admin')}>Click here</span>
+            Admin Login?{" "}
+            <span
+              className="text-primary underline cursor-pointer"
+              onClick={() => setState("Admin")}
+            >
+              Click here
+            </span>
           </p>
         )}
       </div>

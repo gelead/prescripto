@@ -3,11 +3,13 @@ import { createContext, useState } from "react";
 export const AdminContext = createContext();
 
 const AdminContextProvider = (props) => {
-  const [token, setToken] = useState("");
+  const [aToken, setAToken] = useState(
+    localStorage.getItem("aToken") ? localStorage.getItem("aToken") : ""
+  );
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const value = {
-    token,
-    setToken,
+    aToken,
+    setAToken,
     backendUrl,
   };
   return (
