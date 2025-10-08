@@ -11,7 +11,7 @@ const addDoctor = async (req, res) => {
       email,
       password,
       speciality,
-      degree,
+      education,
       experience,
       about,
       fees,
@@ -29,7 +29,7 @@ const addDoctor = async (req, res) => {
       !imageFile ||
       !experience ||
       !about ||
-      !degree
+      !education
     ) {
       return res
         .status(400)
@@ -64,7 +64,7 @@ const addDoctor = async (req, res) => {
       email,
       password: hashedPassword,
       speciality,
-      degree,
+      education,
       experience,
       about,
       fees,
@@ -76,13 +76,14 @@ const addDoctor = async (req, res) => {
     await newDoctor.save();
 
     res.status(201).json({
+      success: true,
       message: "Doctor added successfully",
       doctor: {
         id: newDoctor._id,
         name: newDoctor.name,
         email: newDoctor.email,
         speciality: newDoctor.speciality,
-        degree: newDoctor.degree,
+        education: newDoctor.education,
         experience: newDoctor.experience,
         about: newDoctor.about,
         fees: newDoctor.fees,
