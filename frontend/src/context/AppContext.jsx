@@ -8,6 +8,7 @@ const AppContextProvider = (props) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const [doctors, setDoctors] = useState([]);
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
 
   // ✅ Fixed function
   const getDoctorsData = async () => {
@@ -17,8 +18,8 @@ const AppContextProvider = (props) => {
 
       if (data.success) {
         setDoctors(data.doctors);
-      }else{
-        toast.error(data.message)
+      } else {
+        toast.error(data.message);
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
@@ -33,13 +34,14 @@ const AppContextProvider = (props) => {
   const value = {
     doctors,
     currencySymbol,
-    getDoctorsData, // include it so components can call it
+    getDoctorsData,
+    token,
+    setToken,
+    backendUrl,
   };
 
   return (
-    <AppContext.Provider value={value}>
-      {props.children}
-    </AppContext.Provider>
+    <AppContext.Provider value={value}>{props.children}</AppContext.Provider>
   );
 };
 
