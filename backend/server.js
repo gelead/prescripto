@@ -4,6 +4,7 @@ import dotenv from 'dotenv'; // import dotenv first
 import connectDB from './config/mongodb.js';
 import cloudinary from './config/cloudinary.js'; // configured instance
 import adminRouter from './routes/adminRoute.js';
+import doctorRouter from './routes/doctorRoute.js';
 
 // silently load environment variables
 dotenv.config({ quiet: true });
@@ -14,6 +15,7 @@ const port = process.env.PORT || 4000;
 app.use(express.json());
 app.use(cors());
 app.use('/api/admin', adminRouter);
+app.use('/api/doctor', doctorRouter);
 
 app.get('/api', (req, res) => res.send('hi there from api route'));
 

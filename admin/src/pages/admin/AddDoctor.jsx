@@ -131,6 +131,7 @@ const AddDoctor = () => {
         setAbout("");
       } else {
         toast.error(data.message);
+        console.log(data.message);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
