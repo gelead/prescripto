@@ -91,7 +91,7 @@ const getProfile = async (req, res) => {
     const user = await userModel.findById(userId).select("-password");
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    res.status(200).json({ success: true, user });
+    res.status(200).json({ success: true, userData: user });
   } catch (error) {
     console.error("Error while fetching profile:", error);
     res.status(500).json({ success: false, message: "Internal server error", error: error.message });
