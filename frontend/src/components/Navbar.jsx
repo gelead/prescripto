@@ -1,16 +1,22 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { assets } from "../assets/assets";
 import { NavLink, useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 const Navbar = () => {
   const navigate = useNavigate();
-  const {token, setToken} = useContext(AppContext);
+  const {token, setToken, userData} = useContext(AppContext);
   const [showMenu, setShowMenu] = useState(false);
+  const [profilePic, setProfilePic] = useState(assets.profile_pic);
+  
+  useEffect(() => {
+    setProfilePic(userData?.image || assets.profile_pic);
+  }, [userData]);
   const logout = () => {
     localStorage.removeItem("token");
     setToken(false);
     navigate("/");
   };
+
   return (
     <div className="flex items-center justify-between text-sm py-4 mb-5 border-b border-b-gray-400">
       <img
@@ -43,7 +49,7 @@ const Navbar = () => {
           <div className="flex items-center gap-1 cursor-pointer group relative">
             <img
               className="w-10 rounded-full"
-              src={assets.profile_pic}
+              src={profilePic}
               alt="profile picture"
             />
             <img
