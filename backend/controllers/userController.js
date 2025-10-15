@@ -261,5 +261,141 @@ const bookAppointment = async (req, res) => {
   }
 };
 
+// API to get user appointments for frontend my-appointment page
+const listAppointment = async (req, res) => {
+  try {
+    const userId = req.userId;
 
-export { registerUser, loginUser, getProfile, updateProfile, bookAppointment };
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID not found in request" });
+    }
+
+    const appointments = await appointmentModel.find({ userId });
+
+    res.json({ success: true, appointments });
+  } catch (error) {
+    console.error("Error while fetching appointments list", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+// ==============================
+// Cancel Appointment
+// ==============================
+const cancelAppointment = async (req, res) => {
+  try {
+    const { id } = req.params; // Get appointment ID from URL params
+    const userId = req.userId; // From auth middleware
+
+    console.log("Cancelling appointment:", id, "for user:", userId); // Debug log
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Appointment ID is required" 
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid appointment ID format" 
+      });
+    }
+
+    // Find the appointment
+    const appointment = await appointmentModel.findById(id);
+    if (!appointment) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Appointment not found" 
+      });
+    }
+
+    console.log("Found appointment:", appointment); // Debug log
+
+    // Check if user owns this appointment
+    if (appointment.userId.toString() !== userId.toString()) {
+      return res.status(403).json({ 
+        success: false, 
+        message: "Unauthorized: You can only cancel your own appointments" 
+      });
+    }
+
+    // Check if already cancelled
+    if (appointment.cancelled) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Appointment is already cancelled" 
+      });
+    }
+
+    // Free up the doctor's slot
+    const doctor = await doctorModel.findById(appointment.docId);
+    if (doctor && doctor.slots_booked) {
+      console.log("Doctor slots before cancellation:", doctor.slots_booked); // Debug log
+      
+      let slots_booked = doctor.slots_booked;
+      
+      // Convert to Map if it's stored as object
+      if (slots_booked && typeof slots_booked === 'object' && !(slots_booked instanceof Map)) {
+        slots_booked = new Map(Object.entries(slots_booked));
+      }
+
+      if (slots_booked && slots_booked.has(appointment.slotDate)) {
+        const times = slots_booked.get(appointment.slotDate);
+        const updatedTimes = times.filter(time => time !== appointment.slotTime);
+        
+        if (updatedTimes.length === 0) {
+          slots_booked.delete(appointment.slotDate);
+        } else {
+          slots_booked.set(appointment.slotDate, updatedTimes);
+        }
+
+        // Update doctor's slots
+        await doctorModel.findByIdAndUpdate(
+          appointment.docId,
+          { slots_booked: Object.fromEntries(slots_booked) },
+          { new: true }
+        );
+
+        console.log("Doctor slots after cancellation:", Object.fromEntries(slots_booked)); // Debug log
+      }
+    }
+
+    // Update appointment status
+    const updatedAppointment = await appointmentModel.findByIdAndUpdate(
+      id,
+      { 
+        cancelled: true,
+        status: "cancelled",
+        cancelledAt: new Date()
+      },
+      { new: true }
+    );
+
+    console.log("Appointment cancelled successfully:", updatedAppointment); // Debug log
+
+    res.json({
+      success: true,
+      message: "Appointment cancelled successfully",
+      appointment: updatedAppointment
+    });
+
+  } catch (error) {
+    console.error("Error while cancelling appointment:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment };
