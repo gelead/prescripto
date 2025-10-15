@@ -6,7 +6,7 @@ import { AdminContext } from "./context/AdminContext";
 import Navbar from "./components/Navbar";
 import SideBar from "./components/SideBar";
 import Dashboard from "./pages/admin/Dashboard";
-import AllApointments from "./pages/admin/AllApointments";
+import AllAppointments from "./pages/admin/AllAppointments";
 import AddDoctor from "./pages/admin/AddDoctor";
 import DoctorsList from "./pages/admin/DoctorsList";
 import { Route, Routes } from "react-router-dom";
@@ -21,7 +21,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<></>} />
           <Route path="/admin-dashboard" element={<Dashboard />} />
-          <Route path="/all-appointments" element={<AllApointments />} />
+          <Route path="/all-appointments" element={<AllAppointments />} />
           <Route path="/add-doctor" element={<AddDoctor />} />
           <Route path="/doctors-list" element={<DoctorsList />} />
         </Routes>
