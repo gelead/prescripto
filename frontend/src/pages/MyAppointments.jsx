@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 
 const MyAppointments = () => {
-  const { backendUrl, token } = useContext(AppContext);
+  const { backendUrl, token, getDoctorsData } = useContext(AppContext);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState(null);
@@ -32,7 +32,6 @@ const MyAppointments = () => {
 
   // Cancel appointment
   const cancelAppointment = async (appointmentId) => {
-    
     try {
       setCancellingId(appointmentId);
       const { data } = await axios.delete(
@@ -42,19 +41,23 @@ const MyAppointments = () => {
 
       if (data.success) {
         toast.success("Appointment cancelled successfully");
-        setAppointments(prev => 
-          prev.map(apt => 
-            apt._id === appointmentId 
-              ? { ...apt, cancelled: true, status: "cancelled" } 
+        setAppointments((prev) =>
+          prev.map((apt) =>
+            apt._id === appointmentId
+              ? { ...apt, cancelled: true, status: "cancelled" }
               : apt
           )
         );
+        getDoctorsData();
       } else {
         toast.error(data.message || "Failed to cancel appointment");
       }
     } catch (error) {
       console.error("Cancel error:", error);
-      const message = error.response?.data?.message || error.message || "Failed to cancel appointment";
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to cancel appointment";
       toast.error(message);
     } finally {
       setCancellingId(null);
@@ -64,17 +67,19 @@ const MyAppointments = () => {
   // Format readable date and time
   const formatSlot = (slotDate, slotTime) => {
     if (!slotDate || !slotTime) return "Date not specified";
-    
+
     try {
       const [day, month, year] = slotDate.split("_").map(Number);
       const formattedDate = new Date(year, month - 1, day);
-      
-      return formattedDate.toLocaleDateString('en-US', {
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      }) + ` at ${slotTime}`;
+
+      return (
+        formattedDate.toLocaleDateString("en-US", {
+          weekday: "short",
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }) + ` at ${slotTime}`
+      );
     } catch {
       return `${slotDate} at ${slotTime}`;
     }
@@ -118,7 +123,9 @@ const MyAppointments = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Appointments</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          My Appointments
+        </h1>
         <p className="mt-2 text-gray-600">
           Manage and view your upcoming appointments
         </p>
@@ -128,16 +135,27 @@ const MyAppointments = () => {
         <div className="text-center py-16 bg-white rounded-lg border border-gray-200 shadow-sm">
           <div className="max-w-md mx-auto">
             <div className="mx-auto h-24 w-24 text-gray-400 mb-4">
-              <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+              <svg
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+                />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No appointments
+            </h3>
             <p className="text-gray-500 mb-6">
               You haven't booked any appointments yet.
             </p>
             <button
-              onClick={() => window.location.href = '/doctors'}
+              onClick={() => (window.location.href = "/doctors")}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
               Book an Appointment
@@ -149,7 +167,7 @@ const MyAppointments = () => {
           {appointments.map((item) => {
             const isCancelled = item.cancelled || item.status === "cancelled";
             const isCompleted = item.isCompleted || item.status === "completed";
-            
+
             return (
               <div
                 key={item._id}
@@ -175,15 +193,24 @@ const MyAppointments = () => {
                             {item.docData?.name || "Doctor Name"}
                           </h3>
                           <p className="text-gray-600 mt-1">
-                            {item.docData?.speciality || "Speciality not provided"}
+                            {item.docData?.speciality ||
+                              "Speciality not provided"}
                           </p>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <p className="text-sm font-medium text-gray-500">Amount</p>
-                            <p className="text-lg font-semibold text-gray-900">${item.amount}</p>
+                            <p className="text-sm font-medium text-gray-500">
+                              Amount
+                            </p>
+                            <p className="text-lg font-semibold text-gray-900">
+                              ${item.amount}
+                            </p>
                           </div>
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusStyles(item)}`}>
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusStyles(
+                              item
+                            )}`}
+                          >
                             {getStatusText(item)}
                           </span>
                         </div>
@@ -191,7 +218,9 @@ const MyAppointments = () => {
 
                       <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-4">
                         <div>
-                          <p className="text-sm font-medium text-gray-500">Date & Time</p>
+                          <p className="text-sm font-medium text-gray-500">
+                            Date & Time
+                          </p>
                           <p className="text-gray-900 font-medium">
                             {formatSlot(item.slotDate, item.slotTime)}
                           </p>
@@ -214,9 +243,15 @@ const MyAppointments = () => {
 
                       <button
                         onClick={() => cancelAppointment(item._id)}
-                        disabled={cancellingId === item._id || isCancelled || isCompleted}
+                        disabled={
+                          cancellingId === item._id ||
+                          isCancelled ||
+                          isCompleted
+                        }
                         className={`w-full px-4 py-2.5 text-sm font-medium rounded-lg border transition-all duration-300 flex items-center justify-center gap-2 ${
-                          cancellingId === item._id || isCancelled || isCompleted
+                          cancellingId === item._id ||
+                          isCancelled ||
+                          isCompleted
                             ? "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
                             : "text-red-700 bg-white border-red-300 hover:bg-red-50 hover:border-red-400"
                         }`}
