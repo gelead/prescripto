@@ -5,7 +5,7 @@ import cloudinary from "../config/cloudinary.js";
 import jwt from "jsonwebtoken";
 import appointmentModel from "./../models/appointmentModel.js";
 import mongoose from "mongoose"; // Add this import
-
+import userModel from "./../models/userModel.js";
 
 const addDoctor = async (req, res) => {
   try {
@@ -171,25 +171,25 @@ const appointmentCancel = async (req, res) => {
     console.log("Admin cancelling appointment:", appointmentId); // Debug log
 
     if (!appointmentId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Appointment ID is required" 
+      return res.status(400).json({
+        success: false,
+        message: "Appointment ID is required",
       });
     }
 
     if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid appointment ID format" 
+      return res.status(400).json({
+        success: false,
+        message: "Invalid appointment ID format",
       });
     }
 
     // Find the appointment
     const appointment = await appointmentModel.findById(appointmentId);
     if (!appointment) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Appointment not found" 
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
       });
     }
 
@@ -197,17 +197,17 @@ const appointmentCancel = async (req, res) => {
 
     // Check if already cancelled
     if (appointment.cancelled) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Appointment is already cancelled" 
+      return res.status(400).json({
+        success: false,
+        message: "Appointment is already cancelled",
       });
     }
 
     // Check if appointment is already completed
     if (appointment.isCompleted) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Cannot cancel a completed appointment" 
+      return res.status(400).json({
+        success: false,
+        message: "Cannot cancel a completed appointment",
       });
     }
 
@@ -215,18 +215,24 @@ const appointmentCancel = async (req, res) => {
     const doctor = await doctorModel.findById(appointment.docId);
     if (doctor && doctor.slots_booked) {
       console.log("Doctor slots before cancellation:", doctor.slots_booked); // Debug log
-      
+
       let slots_booked = doctor.slots_booked;
-      
+
       // Convert to Map if it's stored as object
-      if (slots_booked && typeof slots_booked === 'object' && !(slots_booked instanceof Map)) {
+      if (
+        slots_booked &&
+        typeof slots_booked === "object" &&
+        !(slots_booked instanceof Map)
+      ) {
         slots_booked = new Map(Object.entries(slots_booked));
       }
 
       if (slots_booked && slots_booked.has(appointment.slotDate)) {
         const times = slots_booked.get(appointment.slotDate);
-        const updatedTimes = times.filter(time => time !== appointment.slotTime);
-        
+        const updatedTimes = times.filter(
+          (time) => time !== appointment.slotTime
+        );
+
         if (updatedTimes.length === 0) {
           slots_booked.delete(appointment.slotDate);
         } else {
@@ -240,30 +246,35 @@ const appointmentCancel = async (req, res) => {
           { new: true }
         );
 
-        console.log("Doctor slots after cancellation:", Object.fromEntries(slots_booked)); // Debug log
+        console.log(
+          "Doctor slots after cancellation:",
+          Object.fromEntries(slots_booked)
+        ); // Debug log
       }
     }
 
     // Update appointment status
     const updatedAppointment = await appointmentModel.findByIdAndUpdate(
       appointmentId,
-      { 
+      {
         cancelled: true,
         status: "cancelled",
         cancelledAt: new Date(),
-        cancellationReason: "Cancelled by admin"
+        cancellationReason: "Cancelled by admin",
       },
       { new: true }
     );
 
-    console.log("Appointment cancelled successfully by admin:", updatedAppointment); // Debug log
+    console.log(
+      "Appointment cancelled successfully by admin:",
+      updatedAppointment
+    ); // Debug log
 
     res.json({
       success: true,
       message: "Appointment cancelled successfully",
-      appointment: updatedAppointment
+      appointment: updatedAppointment,
     });
-
   } catch (error) {
     console.error("Error while cancelling appointment:", error);
     res.status(500).json({
@@ -274,4 +285,43 @@ const appointmentCancel = async (req, res) => {
   }
 };
 
-export { addDoctor, loginAdmin, allDoctors, appointmentAdmin, appointmentCancel };
+//API to get dashboard data for admin panel
+const adminDashboard = async (req, res) => {
+  try {
+    const doctors = await doctorModel.countDocuments();
+    const patients = await userModel.countDocuments();
+    const appointments = await appointmentModel.countDocuments();
+
+    // Get latest appointments with populated data
+    const latestAppointments = await appointmentModel
+      .find({})
+      .sort({ date: -1 }) 
+      .limit(5)
+      .populate("userData") 
+      .populate("docData"); 
+
+    const dashData = {
+      doctors: doctors,
+      patients: patients,
+      appointments: appointments,
+      latestAppointment: latestAppointments, // Changed to match frontend expectation
+    };
+
+    res.json({
+      success: true,
+      ...dashData, // Spread the data directly to match frontend structure
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export {
+  addDoctor,
+  loginAdmin,
+  allDoctors,
+  appointmentAdmin,
+  appointmentCancel,
+  adminDashboard,
+};

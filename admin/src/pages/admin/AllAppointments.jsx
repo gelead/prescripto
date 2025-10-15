@@ -107,7 +107,6 @@ const AllAppointments = () => {
                 {item.amount || "0"}
               </p>
 
-              {/* Actions */}
               <div className="flex justify-center">
                 {item.cancelled ? (
                   <p className="text-red-400 text-sm font-medium">Cancelled</p>

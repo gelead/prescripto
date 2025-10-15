@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -10,12 +10,15 @@ const AdminContextProvider = (props) => {
   );
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [dashData, setDashData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   // ✅ Function to get all doctors
-  const getAllDoctors = async () => {
+  const getAllDoctors = useCallback(async () => {
     try {
+      setLoading(true);
       const { data } = await axios.post(
         `${backendUrl}/api/admin/all-doctors`,
         {},
@@ -28,17 +31,18 @@ const AdminContextProvider = (props) => {
 
       if (data.success) {
         setDoctors(data.doctors);
-        console.log("Doctors list fetched:", data.doctors);
       } else {
         toast.error(data.message);
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
       toast.error("Something went wrong while getting doctors list.");
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [aToken, backendUrl]);
 
-  const changeAvailability = async (docId) => {
+  const changeAvailability = useCallback(async (docId) => {
     try {
       const { data } = await axios.post(
         backendUrl + "/api/admin/change-availability",
@@ -53,7 +57,7 @@ const AdminContextProvider = (props) => {
       );
       if (data.success) {
         toast.success(data.message);
-        getAllDoctors(); // Refresh the doctors list to reflect the change
+        getAllDoctors();
       } else {
         toast.error(data.message);
       }
@@ -61,10 +65,11 @@ const AdminContextProvider = (props) => {
       console.error("Error changing availability:", error);
       toast.error("Something went wrong while changing availability.");
     }
-  };
+  }, [aToken, backendUrl, getAllDoctors]);
 
-  const getAllAppointments = async () => {
+  const getAllAppointments = useCallback(async () => {
     try {
+      setLoading(true);
       const { data } = await axios.get(backendUrl + "/api/admin/appointments", {
         headers: {
           Authorization: aToken,
@@ -72,7 +77,6 @@ const AdminContextProvider = (props) => {
       });
       if (data.success) {
         setAppointments(data.appointments);
-        console.log("Appointments fetched:", data.appointments);
       } else {
         toast.error(data.message);
         return [];
@@ -81,18 +85,17 @@ const AdminContextProvider = (props) => {
       console.error("Error fetching appointments:", error);
       toast.error("Something went wrong while getting appointments.");
       return [];
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [aToken, backendUrl]);
 
   // ✅ Function to cancel appointment (Admin)
-  const cancelAppointment = async (appointmentId) => {
+  const cancelAppointment = useCallback(async (appointmentId) => {
     try {
-      console.log("Cancelling appointment:", appointmentId); // Debug log
-
       const { data } = await axios.post(
         `${backendUrl}/api/admin/cancel-appointment`,
         { appointmentId },
-
         {
           headers: {
             Authorization: aToken,
@@ -102,9 +105,8 @@ const AdminContextProvider = (props) => {
 
       if (data.success) {
         toast.success(data.message);
-        console.log("Appointment cancelled successfully:", data.appointment);
 
-        // Update the appointments list locally instead of refetching all
+        // Update the appointments list locally
         setAppointments((prevAppointments) =>
           prevAppointments.map((apt) =>
             apt._id === appointmentId
@@ -118,6 +120,21 @@ const AdminContextProvider = (props) => {
           )
         );
 
+        // Also update dashData if it exists
+        setDashData(prev => prev ? {
+          ...prev,
+          latestAppointment: prev.latestAppointment?.map(apt =>
+            apt._id === appointmentId
+              ? {
+                  ...apt,
+                  cancelled: true,
+                  status: "cancelled",
+                  cancelledAt: new Date(),
+                }
+              : apt
+          )
+        } : prev);
+
         return data.appointment;
       } else {
         toast.error(data.message);
@@ -125,20 +142,38 @@ const AdminContextProvider = (props) => {
       }
     } catch (error) {
       console.error("Error cancelling appointment:", error);
-
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
+      if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
         toast.error("Something went wrong while cancelling the appointment.");
       }
-
       return null;
     }
-  };
+  }, [aToken, backendUrl]);
+
+  const getDashData = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (loading) return;
+    
+    try {
+      setLoading(true);
+      const { data } = await axios.get(backendUrl + "/api/admin/dashboard", {
+        headers: {
+          Authorization: aToken,
+        },
+      });
+      if (data.success) {
+        setDashData(data);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      toast.error("Something went wrong while getting dashboard data.");
+    } finally {
+      setLoading(false);
+    }
+  }, [aToken, backendUrl, loading]);
 
   // ✅ Provide context values
   const value = {
@@ -151,7 +186,10 @@ const AdminContextProvider = (props) => {
     appointments,
     setAppointments,
     getAllAppointments,
-    cancelAppointment, // Add the new function
+    cancelAppointment,
+    dashData,
+    getDashData,
+    loading,
   };
 
   return (
