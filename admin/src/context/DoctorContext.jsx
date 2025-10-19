@@ -15,6 +15,8 @@ const DoctorContextProvider = (props) => {
   );
 
   const [dashData, setDashData] = useState(false);
+  const [profileData, setProfileData] = useState(false);
+
   // Memoize getAppointments
   const getAppointments = useCallback(async () => {
     try {
@@ -35,7 +37,7 @@ const DoctorContextProvider = (props) => {
     }
   }, [dToken, backendUrl]);
 
-  // Memoize completeAppointment - FIXED ENDPOINT
+  // Memoize completeAppointment
   const completeAppointment = useCallback(
     async (appointmentId) => {
       try {
@@ -71,12 +73,12 @@ const DoctorContextProvider = (props) => {
     [dToken, backendUrl]
   );
 
-  // Memoize cancelAppointment - FIXED ENDPOINT
+  // Memoize cancelAppointment
   const cancelAppointment = useCallback(
     async (appointmentId, reason = "Cancelled by doctor") => {
       try {
         const { data } = await axios.post(
-          backendUrl + "/api/doctor/cancel-appointment", // Changed from /appointment/cancel
+          backendUrl + "/api/doctor/cancel-appointment",
           {
             appointmentId: appointmentId,
             reason: reason,
@@ -112,6 +114,36 @@ const DoctorContextProvider = (props) => {
     [dToken, backendUrl]
   );
 
+  // Update doctor profile
+  const updateProfile = useCallback(async (formData) => {
+    try {
+      const { data } = await axios.post(
+        backendUrl + "/api/doctor/update-profile",
+        formData,
+        {
+          headers: {
+            Authorization: dToken,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        setProfileData(data.doctor); // Update local state with new data
+        return { success: true, doctor: data.doctor };
+      } else {
+        toast.error(data.message);
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      const errorMessage = error.response?.data?.message || "Failed to update profile";
+      toast.error(errorMessage);
+      return { success: false, message: errorMessage };
+    }
+  }, [dToken, backendUrl]);
+
   const setDoctorAuth = useCallback((token, id) => {
     setDToken(token);
     setDoctorId(id);
@@ -123,6 +155,8 @@ const DoctorContextProvider = (props) => {
     setDToken("");
     setDoctorId("");
     setAppointments([]);
+    setDashData(false);
+    setProfileData(false);
     localStorage.removeItem("dToken");
     localStorage.removeItem("doctorId");
   }, []);
@@ -134,7 +168,7 @@ const DoctorContextProvider = (props) => {
       });
       if (data.success) {
         setDashData(data.dashData);
-        console.log(data.dashData)
+        console.log(data.dashData);
       } else {
         toast.error(data.message);
       }
@@ -143,6 +177,24 @@ const DoctorContextProvider = (props) => {
       toast.error(error.message);
     }
   };
+
+  const getProfileData = async () => {
+    try {
+      const { data } = await axios.get(backendUrl + '/api/doctor/profile', {
+        headers: { Authorization: dToken }
+      });
+      if (data.success) {
+        setProfileData(data.profileData);
+        console.log(data.profileData);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
+    }
+  };
+
   const value = {
     backendUrl,
     dToken,
@@ -158,6 +210,10 @@ const DoctorContextProvider = (props) => {
     dashData,
     setDashData,
     getDashData,
+    profileData,
+    setProfileData,
+    getProfileData,
+    updateProfile, // Add the update function to context
   };
 
   return (
