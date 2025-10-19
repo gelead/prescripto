@@ -14,12 +14,16 @@ const DoctorContextProvider = (props) => {
     localStorage.getItem("doctorId") ? localStorage.getItem("doctorId") : ""
   );
 
+  const [dashData, setDashData] = useState(false);
   // Memoize getAppointments
   const getAppointments = useCallback(async () => {
     try {
-      const { data } = await axios.get(backendUrl + "/api/doctor/appointments", {
-        headers: { Authorization: dToken },
-      });
+      const { data } = await axios.get(
+        backendUrl + "/api/doctor/appointments",
+        {
+          headers: { Authorization: dToken },
+        }
+      );
       if (data.success) {
         setAppointments(data.appointments.reverse());
       } else {
@@ -32,67 +36,81 @@ const DoctorContextProvider = (props) => {
   }, [dToken, backendUrl]);
 
   // Memoize completeAppointment - FIXED ENDPOINT
-  const completeAppointment = useCallback(async (appointmentId) => {
-    try {
-      const { data } = await axios.post(
-        backendUrl + "/api/doctor/complete-appointment", 
-        {
-          appointmentId: appointmentId
-        },
-        {
-          headers: { Authorization: dToken }
-        }
-      );
-
-      if (data.success) {
-        toast.success(data.message);
-        setAppointments(prevAppointments => 
-          prevAppointments.map(appointment => 
-            appointment._id === appointmentId 
-              ? { ...appointment, isCompleted: true }
-              : appointment
-          )
+  const completeAppointment = useCallback(
+    async (appointmentId) => {
+      try {
+        const { data } = await axios.post(
+          backendUrl + "/api/doctor/complete-appointment",
+          {
+            appointmentId: appointmentId,
+          },
+          {
+            headers: { Authorization: dToken },
+          }
         );
-      } else {
-        toast.error(data.message);
+
+        if (data.success) {
+          toast.success(data.message);
+          setAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) =>
+              appointment._id === appointmentId
+                ? { ...appointment, isCompleted: true }
+                : appointment
+            )
+          );
+        } else {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        console.error("Error completing appointment:", error);
+        toast.error(
+          error.response?.data?.message || "Failed to complete appointment"
+        );
       }
-    } catch (error) {
-      console.error("Error completing appointment:", error);
-      toast.error(error.response?.data?.message || "Failed to complete appointment");
-    }
-  }, [dToken, backendUrl]);
+    },
+    [dToken, backendUrl]
+  );
 
   // Memoize cancelAppointment - FIXED ENDPOINT
-  const cancelAppointment = useCallback(async (appointmentId, reason = "Cancelled by doctor") => {
-    try {
-      const { data } = await axios.post(
-        backendUrl + "/api/doctor/cancel-appointment", // Changed from /appointment/cancel
-        {
-          appointmentId: appointmentId,
-          reason: reason
-        },
-        {
-          headers: { Authorization: dToken }
-        }
-      );
-
-      if (data.success) {
-        toast.success(data.message);
-        setAppointments(prevAppointments => 
-          prevAppointments.map(appointment => 
-            appointment._id === appointmentId 
-              ? { ...appointment, cancelled: true, cancellationReason: reason }
-              : appointment
-          )
+  const cancelAppointment = useCallback(
+    async (appointmentId, reason = "Cancelled by doctor") => {
+      try {
+        const { data } = await axios.post(
+          backendUrl + "/api/doctor/cancel-appointment", // Changed from /appointment/cancel
+          {
+            appointmentId: appointmentId,
+            reason: reason,
+          },
+          {
+            headers: { Authorization: dToken },
+          }
         );
-      } else {
-        toast.error(data.message);
+
+        if (data.success) {
+          toast.success(data.message);
+          setAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) =>
+              appointment._id === appointmentId
+                ? {
+                    ...appointment,
+                    cancelled: true,
+                    cancellationReason: reason,
+                  }
+                : appointment
+            )
+          );
+        } else {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        console.error("Error cancelling appointment:", error);
+        toast.error(
+          error.response?.data?.message || "Failed to cancel appointment"
+        );
       }
-    } catch (error) {
-      console.error("Error cancelling appointment:", error);
-      toast.error(error.response?.data?.message || "Failed to cancel appointment");
-    }
-  }, [dToken, backendUrl]);
+    },
+    [dToken, backendUrl]
+  );
 
   const setDoctorAuth = useCallback((token, id) => {
     setDToken(token);
@@ -109,6 +127,22 @@ const DoctorContextProvider = (props) => {
     localStorage.removeItem("doctorId");
   }, []);
 
+  const getDashData = async () => {
+    try {
+      const { data } = await axios.get(backendUrl + "/api/doctor/dashboard", {
+        headers: { Authorization: dToken },
+      });
+      if (data.success) {
+        setDashData(data.dashData);
+        console.log(data.dashData)
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
+    }
+  };
   const value = {
     backendUrl,
     dToken,
@@ -121,8 +155,11 @@ const DoctorContextProvider = (props) => {
     appointments,
     completeAppointment,
     cancelAppointment,
+    dashData,
+    setDashData,
+    getDashData,
   };
-  
+
   return (
     <DoctorContext.Provider value={value}>
       {props.children}

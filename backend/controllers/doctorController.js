@@ -256,11 +256,47 @@ const appointmentCancel = async (req, res) => {
   }
 };
 
+//API to get dashboard data for doctor panel
+const doctorDashboard = async (req, res) => {
+  try {
+    const docId = req.docId; // Get doctor ID from authenticated token
+
+    // Fetch all appointments for this doctor
+    const appointments = await appointmentModel.find({ docId });
+
+    // Calculate total earnings (only from completed & paid appointments)
+    const earnings = appointments.reduce((total, item) => {
+      if (item.isCompleted && item.payment) {
+        return total + (item.amount || 0);
+      }
+      return total;
+    }, 0);
+
+    // Collect unique patient IDs
+    const uniquePatients = new Set(appointments.map(item => item.userId));
+
+    // Build dashboard data
+    const dashData = {
+      earnings,
+      appointments: appointments.length,
+      patients: uniquePatients.size,
+      latestAppointments: [...appointments].reverse().slice(0, 5)
+    };
+
+    res.json({ success: true, dashData });
+  } catch (error) {
+    console.error("Error in doctorDashboard:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
 export { 
   changeAvailability, 
   doctorList, 
   loginDoctor, 
   appointmentsDoctor, 
   appointmentComplete, 
-  appointmentCancel // Fixed typo: was appointmentCancelled
+  appointmentCancel ,
+  doctorDashboard
 };
